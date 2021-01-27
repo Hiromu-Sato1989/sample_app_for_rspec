@@ -40,20 +40,20 @@ RSpec.describe Task, type: :model do
     it 'タイトルが一意でなければ無効な状態であること' do
       user = FactoryBot.create(:user)
 
-      task1 = user.tasks.create(
+      task = user.tasks.create(
         title: "example",
         content: "hogehoge",
         status: "todo",
         deadline: Time.zone.now
       )
-      task2 = user.tasks.create(
+      task_with_another_title = user.tasks.create(
         title: "example",
         content: "hogehoge",
         status: "todo",
         deadline: Time.zone.now
       )
-      task2.valid?
-      expect(task2.errors[:title]).to include("has already been taken")
+      task_with_another_title.valid?
+      expect(task_with_another_title.errors[:title]).to include("has already been taken")
     end
     it 'タイトルが一意であれば有効であること' do
       user = FactoryBot.create(:user)
