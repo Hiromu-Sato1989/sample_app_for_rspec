@@ -4,6 +4,6 @@ FactoryBot.define do
     content { "content" }
     status { :todo }
     deadline { 1.week.from_now }
-    # association :user
+    association :user
   end
 end
