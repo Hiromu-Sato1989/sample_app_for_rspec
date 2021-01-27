@@ -26,9 +26,22 @@ RSpec.describe Task, type: :model do
       task.valid?
       expect(task.errors[:status]).to include("can't be blank")
     end
-    
-    # it 'タイトルがユニークでなければ無効な状態であること' do
-    # end
-    # it 'ステータスがなければ無効な状態であること' do
-    # end
+    it 'タイトルが一意でなければ無効な状態であること' do
+      user = FactoryBot.create(:user)
+
+      task1 = user.tasks.create(
+        title: "example",
+        content: "hogehoge",
+        status: "todo",
+        deadline: Time.zone.now
+      )
+      task2 = user.tasks.create(
+        title: "example",
+        content: "hogehoge",
+        status: "todo",
+        deadline: Time.zone.now
+      )
+      task2.valid?
+      expect(task2.errors[:title]).to include("has already been taken")
+    end
 end
