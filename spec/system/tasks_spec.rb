@@ -1,89 +1,71 @@
 require 'rails_helper'
 
-RSpec.describe 'Users', type: :system do
-  describe 'ログイン前' do
-    describe 'ユーザー新規登録' do
-      context 'フォームの入力値が正常' do
-        it 'ユーザーの新規作成が成功する' do
-          user = build(:user)
-          expect(user).to be_valid
-          # expect(user.errors).to be_empty
-        end
-      end
-      context 'メールアドレスが未入力' do
-        it 'ユーザーの新規作成が失敗する' do
-          user = build(:user, email: "")
-          expect(user).to be_invalid
-        end
-      end
-      context '登録済のメールアドレスを使用' do
-        it 'ユーザーの新規作成が失敗する' do
-          create(:user, email: "user@example.com")
-          invalid_user = build(:user, email: "user@example.com")
-          expect(invalid_user).to be_invalid
-        end
-      end
-    end
-
-    describe 'マイページ' do
-      context 'ログインしていない状態' do
-        it 'マイページへのアクセスが失敗する' do
-          visit root_path
-        end
-      end
-    end
-  end
-
+RSpec.describe 'Tasks', type: :system do
+  let(:user) { create(:user) }
+  let(:task) { create(:task) }
   describe 'ログイン後' do
-    before do
-      @user = create(:user, email: "sample@example.com" )
-      visit login_path
-      fill_in 'Email', with: "sample@example.com"
-      fill_in 'Password', with: "password"
-      click_button 'Login'
-    end
-    describe 'ユーザー編集' do
-      before do
-        visit edit_user_path(1)
-      end
+    before { login(user) }
+    describe 'タスクの新規作成' do
       context 'フォームの入力値が正常' do
-        it 'ユーザーの編集が成功する' do
-          click_button 'Update'
-          expect(@user.reload).to completed?
+        it 'タスクの新規作成が成功する' do
+          click_link 'New Task'
+          fill_in 'Title', with: "title"
+          fill_in 'Content', with: "content"
+          select 'doing', from: 'Status'
+          fill_in 'Deadline', with: 1.week.from_now
+          click_button 'Create Task'
+          expect(current_path).to eq '/tasks/1'
+          expect(page).to have_content "Task was successfully created."
         end
       end
-      context 'メールアドレスが未入力' do
-        it 'ユーザーの編集が失敗する'
+      context 'タイトルが未入力' do
+        it 'タスクの新規作成が失敗する' do
+          click_link 'New Task'
+          fill_in 'Title', with: ""
+          fill_in 'Content', with: "content"
+          select 'doing', from: 'Status'
+          fill_in 'Deadline', with: 1.week.from_now
+          click_button 'Create Task'
+          expect(current_path).to eq tasks_path
+          expect(page).to have_content "Title can't be blank"
+        end
       end
-      context '登録済のメールアドレスを使用' do
-        it 'ユーザーの編集が失敗する'
-      end
-      context '他ユーザーの編集ページにアクセス' do
-        it '編集ページへのアクセスが失敗する'
+      context '登録済みのタイトルを入力' do
+        it 'タスクの新規作成が失敗する' do
+          create(:task, title: 'title')
+          click_link 'New Task'
+          fill_in 'Title', with: "title"
+          fill_in 'Content', with: "content"
+          select 'doing', from: 'Status'
+          fill_in 'Deadline', with: 1.week.from_now
+          click_button 'Create Task'
+          expect(current_path).to eq tasks_path
+          expect(page).to have_content "Title has already been taken"
+        end
       end
     end
-
-    describe 'マイページ' do
-      context 'タスクを作成' do
-        it '新規作成したタスクが表示される'
+    describe 'タスクの編集' do
+      let!(:task) { create(:task, user: user) }
+      context 'フォームの入力値が正常' do
+        it 'タスクの編集が成功する' do
+          visit edit_task_path(task)
+          fill_in 'Title', with: 'new_title'
+          select 'doin', from: 'Status'
+          click_button 'Update Task'
+          expect(current_path).to eq '/tasks/1'
+          expect(page).to have_content "Task was successfully updated."
+        end
       end
-    end
-  end
-end
-
-RSpec.describe 'UserSessions', type: :system do
-  describe 'ログイン前' do
-    context 'フォームの入力値が正常' do
-      it 'ログイン処理が成功する'
-    end
-    context 'フォームが未入力' do
-      it 'ログイン処理が失敗する'
-    end
-  end
-
-  describe 'ログイン後' do
-    context 'ログアウトボタンをクリック' do
-      it 'ログアウト処理が成功する'
+      context 'タイトルが未入力' do
+        it 'タスクの編集が失敗する' do 
+          visit edit_task_path(task)
+          fill_in 'Title', with: ''
+          select 'doin', from: 'Status'
+          click_button 'Update Task'
+          expect(current_path).to eq '/tasks/1'
+          expect(page).to have_content "Title can't be blank"
+        end
+      end
     end
   end
 end

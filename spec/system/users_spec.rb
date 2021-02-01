@@ -67,8 +67,7 @@ RSpec.describe 'Users', type: :system do
       context 'メールアドレスが未入力' do
         it 'ユーザーの編集が失敗する' do
           visit edit_user_path(user)
-          fill_in 'Email', with: user.email
-          fill_in 'Password', with: "password"
+          fill_in 'Email', with: nil
           fill_in 'Password confirmation', with: "password"
           click_button 'Update'
           expect(current_path).to eq user_path(user)
@@ -98,13 +97,13 @@ RSpec.describe 'Users', type: :system do
       context 'タスクを作成' do
         it '新規作成したタスクが表示される' do
           visit tasks_path
-          click_button 'New Task'
+          click_link 'New Task'
           fill_in 'Title', with: "title"
           fill_in 'Content', with: "content"
-          fill_in 'Status', with: "todo"
+          select 'doing', from: 'Status'
           fill_in 'Deadline', with: 1.week.from_now
           click_button 'Create Task'
-          expect(current_path).to eq task_path(task)
+          expect(current_path).to eq '/tasks/1'
           expect(page).to have_content "Task was successfully created."
         end
       end
