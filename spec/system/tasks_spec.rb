@@ -3,8 +3,10 @@ require 'rails_helper'
 RSpec.describe 'Tasks', type: :system do
   let(:user) { create(:user) }
   let(:task) { create(:task) }
+
   describe 'ログイン後' do
     before { login(user) }
+
     describe 'タスクの新規作成' do
       context 'フォームの入力値が正常' do
         it 'タスクの新規作成が成功する' do
@@ -32,12 +34,10 @@ RSpec.describe 'Tasks', type: :system do
       end
       context '登録済みのタイトルを入力' do
         it 'タスクの新規作成が失敗する' do
-          create(:task, title: 'title')
+          other_task = create(:task)
           click_link 'New Task'
-          fill_in 'Title', with: "title"
+          fill_in 'Title', with: other_task.title
           fill_in 'Content', with: "content"
-          select 'doing', from: 'Status'
-          fill_in 'Deadline', with: 1.week.from_now
           click_button 'Create Task'
           expect(current_path).to eq tasks_path
           expect(page).to have_content "Title has already been taken"
