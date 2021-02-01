@@ -80,6 +80,19 @@ RSpec.describe 'Tasks', type: :system do
         end
       end
     end
+
+    describe 'タスク削除' do
+      let!(:task) { create(:task, user: user) }
+
+      it 'タスクの削除が成功する' do
+        visit tasks_path
+        click_link 'Destroy'
+        expect(page.accept_confirm).to eq 'Are you sure?'
+        expect(page).to have_content 'Task was successfully destroyed'
+        expect(current_path).to eq tasks_path
+        expect(page).not_to have_content task.title
+      end
+    end
   end
 
   describe 'ログイン前' do
