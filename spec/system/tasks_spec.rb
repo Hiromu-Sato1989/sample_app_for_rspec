@@ -46,6 +46,8 @@ RSpec.describe 'Tasks', type: :system do
     end
     describe 'タスクの編集' do
       let!(:task) { create(:task, user: user) }
+      let(:other_task) { create(:task, user: user) }
+
       context 'フォームの入力値が正常' do
         it 'タスクの編集が成功する' do
           visit edit_task_path(task)
@@ -64,6 +66,17 @@ RSpec.describe 'Tasks', type: :system do
           click_button 'Update Task'
           expect(current_path).to eq '/tasks/1'
           expect(page).to have_content "Title can't be blank"
+        end
+      end
+      context '登録済のタイトルを入力' do
+        it 'タスクの編集が失敗する' do
+          visit edit_task_path(task)
+          fill_in 'Title', with: other_task.title
+          select :todo, from: 'Status'
+          click_button 'Update Task'
+          expect(page).to have_content '1 error prohibited this task from being saved'
+          expect(page).to have_content "Title has already been taken"
+          expect(current_path).to eq task_path(task)
         end
       end
     end
